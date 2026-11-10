@@ -102,4 +102,29 @@ describe('DragHandle', () => {
     expect(editor.registerPlugin.mock.calls.length).toBe(registerCount)
     expect(editor.unregisterPlugin.mock.calls.length).toBe(unregisterCount)
   })
+
+  it('calls the latest dragImage without re-registering the plugin', () => {
+    const editor = createEditor()
+    const firstElement = document.createElement('div')
+    const latestElement = document.createElement('div')
+    const renderHandle = (dragImage?: () => HTMLElement) =>
+      React.createElement(DragHandle, {
+        editor: editor as never,
+        dragImage,
+        children: React.createElement('span', null, 'Handle'),
+      } as never)
+
+    const { rerender } = render(renderHandle(() => firstElement))
+    rerender(renderHandle(() => latestElement))
+
+    const { dragImage } = dragHandlePluginMock.mock.calls[0][0]
+
+    expect(editor.registerPlugin).toHaveBeenCalledTimes(1)
+    expect(dragImage({})).toBe(latestElement)
+
+    rerender(renderHandle(undefined))
+
+    expect(editor.registerPlugin).toHaveBeenCalledTimes(2)
+    expect(dragHandlePluginMock.mock.calls.at(-1)?.[0].dragImage).toBeUndefined()
+  })
 })
