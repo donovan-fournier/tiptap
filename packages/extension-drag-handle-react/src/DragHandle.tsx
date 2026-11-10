@@ -77,6 +77,7 @@ export const DragHandle = (props: DragHandleProps) => {
     getReferencedVirtualElement,
     computePositionConfig = defaultComputePositionConfig,
     nested = false,
+    dragImage,
   } = props
   const elementRef = useRef<HTMLDivElement | null>(null)
 
@@ -90,12 +91,14 @@ export const DragHandle = (props: DragHandleProps) => {
     onElementDragStart,
     onElementDragEnd,
     getReferencedVirtualElement,
+    dragImage,
   }
   const callbacksRef = useRef(callbacks)
   callbacksRef.current = callbacks
 
   // oxlint-disable-next-line react-hooks/exhaustive-deps
   const nestedOptions = useMemo(() => normalizeNestedOptions(nested), [JSON.stringify(nested)])
+  const hasDragImage = Boolean(dragImage)
 
   useEffect(() => {
     const element = elementRef.current
@@ -138,6 +141,9 @@ export const DragHandle = (props: DragHandleProps) => {
       getReferencedVirtualElement: () =>
         callbacksRef.current.getReferencedVirtualElement?.() ?? null,
       nestedOptions,
+      dragImage: hasDragImage
+        ? context => callbacksRef.current.dragImage?.(context) ?? null
+        : undefined,
     })
 
     editor.registerPlugin(plugin)
@@ -148,7 +154,7 @@ export const DragHandle = (props: DragHandleProps) => {
       }
       unbind()
     }
-  }, [editor, pluginKey, computePositionConfig, nestedOptions])
+  }, [editor, pluginKey, computePositionConfig, nestedOptions, hasDragImage])
 
   const element = elementRef.current
   if (!element) {

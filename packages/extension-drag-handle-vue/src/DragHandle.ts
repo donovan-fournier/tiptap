@@ -83,6 +83,11 @@ export const DragHandle = defineComponent({
       type: [Boolean, Object] as PropType<DragHandleProps['nested']>,
       default: false,
     },
+
+    dragImage: {
+      type: Function as PropType<DragHandleProps['dragImage']>,
+      default: undefined,
+    },
   },
 
   setup(props, { slots }) {
@@ -121,6 +126,7 @@ export const DragHandle = defineComponent({
         onElementDragStart,
         onElementDragEnd,
         nestedOptions,
+        dragImage: props.dragImage ? context => props.dragImage?.(context) ?? null : undefined,
       })
 
       pluginHandle.value = init
@@ -153,6 +159,15 @@ export const DragHandle = defineComponent({
         initPlugin()
       },
       { deep: true },
+    )
+
+    // Read the latest function at drag time, so only setting or unsetting it re-registers.
+    watch(
+      () => Boolean(props.dragImage),
+      () => {
+        destroyPlugin()
+        initPlugin()
+      },
     )
 
     onBeforeUnmount(() => {
