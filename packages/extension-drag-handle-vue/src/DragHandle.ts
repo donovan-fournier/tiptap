@@ -83,6 +83,11 @@ export const DragHandle = defineComponent({
       type: [Boolean, Object] as PropType<DragHandleProps['nested']>,
       default: false,
     },
+
+    dragImageProperties: {
+      type: Array as PropType<DragHandleProps['dragImageProperties']>,
+      default: undefined,
+    },
   },
 
   setup(props, { slots }) {
@@ -98,6 +103,7 @@ export const DragHandle = defineComponent({
         onElementDragStart,
         computePositionConfig,
         nested,
+        dragImageProperties,
       } = props
 
       if (!root.value) {
@@ -121,6 +127,7 @@ export const DragHandle = defineComponent({
         onElementDragStart,
         onElementDragEnd,
         nestedOptions,
+        dragImageProperties,
       })
 
       pluginHandle.value = init
@@ -153,6 +160,15 @@ export const DragHandle = defineComponent({
         initPlugin()
       },
       { deep: true },
+    )
+
+    // Compare by value so an inline array doesn't re-register the plugin on every render.
+    watch(
+      () => JSON.stringify(props.dragImageProperties),
+      () => {
+        destroyPlugin()
+        initPlugin()
+      },
     )
 
     onBeforeUnmount(() => {

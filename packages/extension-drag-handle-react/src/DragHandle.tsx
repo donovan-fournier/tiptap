@@ -77,6 +77,7 @@ export const DragHandle = (props: DragHandleProps) => {
     getReferencedVirtualElement,
     computePositionConfig = defaultComputePositionConfig,
     nested = false,
+    dragImageProperties,
   } = props
   const elementRef = useRef<HTMLDivElement | null>(null)
 
@@ -96,6 +97,9 @@ export const DragHandle = (props: DragHandleProps) => {
 
   // oxlint-disable-next-line react-hooks/exhaustive-deps
   const nestedOptions = useMemo(() => normalizeNestedOptions(nested), [JSON.stringify(nested)])
+
+  // Compare by value so an inline array doesn't re-register the plugin on every render.
+  const dragImagePropertiesKey = JSON.stringify(dragImageProperties)
 
   useEffect(() => {
     const element = elementRef.current
@@ -138,6 +142,7 @@ export const DragHandle = (props: DragHandleProps) => {
       getReferencedVirtualElement: () =>
         callbacksRef.current.getReferencedVirtualElement?.() ?? null,
       nestedOptions,
+      dragImageProperties: dragImagePropertiesKey ? JSON.parse(dragImagePropertiesKey) : undefined,
     })
 
     editor.registerPlugin(plugin)
@@ -148,7 +153,7 @@ export const DragHandle = (props: DragHandleProps) => {
       }
       unbind()
     }
-  }, [editor, pluginKey, computePositionConfig, nestedOptions])
+  }, [editor, pluginKey, computePositionConfig, nestedOptions, dragImagePropertiesKey])
 
   const element = elementRef.current
   if (!element) {
