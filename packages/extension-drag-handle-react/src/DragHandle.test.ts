@@ -102,4 +102,42 @@ describe('DragHandle', () => {
     expect(editor.registerPlugin.mock.calls.length).toBe(registerCount)
     expect(editor.unregisterPlugin.mock.calls.length).toBe(unregisterCount)
   })
+
+  it('forwards dragImageProperties to the plugin', () => {
+    const editor = createEditor()
+
+    render(
+      React.createElement(DragHandle, {
+        editor: editor as never,
+        dragImageProperties: ['color', 'font-size'],
+        children: React.createElement('span', null, 'Handle'),
+      } as never),
+    )
+
+    expect(dragHandlePluginMock.mock.calls[0][0].dragImageProperties).toEqual([
+      'color',
+      'font-size',
+    ])
+  })
+
+  it('re-registers the plugin when dragImageProperties change', () => {
+    const editor = createEditor()
+    const renderHandle = (dragImageProperties: string[]) =>
+      React.createElement(DragHandle, {
+        editor: editor as never,
+        dragImageProperties,
+        children: React.createElement('span', null, 'Handle'),
+      } as never)
+
+    const { rerender } = render(renderHandle(['color']))
+
+    rerender(renderHandle(['color']))
+    expect(editor.registerPlugin).toHaveBeenCalledTimes(1)
+
+    rerender(renderHandle(['background-color']))
+    expect(editor.registerPlugin).toHaveBeenCalledTimes(2)
+    expect(dragHandlePluginMock.mock.calls.at(-1)?.[0].dragImageProperties).toEqual([
+      'background-color',
+    ])
+  })
 })

@@ -62,6 +62,35 @@ describe('DragHandle plugin registration stability', () => {
     expect(unregister.mock.calls.length).toBe(0)
   })
 
+  it('does not re-register the plugin on transactions when dragImageProperties is an inline array', () => {
+    editor = createRealEditor()
+    const register = vi.spyOn(editor, 'registerPlugin')
+    const unregister = vi.spyOn(editor, 'unregisterPlugin')
+
+    function Parent({ editor: ed }: { editor: Editor }) {
+      useEditorState({ editor: ed, selector: s => s.transactionNumber })
+      return React.createElement(DragHandle, {
+        editor: ed,
+        // A fresh array on every render.
+        dragImageProperties: ['color', 'font-size'],
+        children: React.createElement('span', null, 'handle'),
+      } as never)
+    }
+
+    act(() => {
+      render(React.createElement(Parent, { editor }))
+    })
+
+    for (let i = 0; i < 5; i += 1) {
+      act(() => {
+        editor.view.dispatch(editor.state.tr.insertText('x', 1))
+      })
+    }
+
+    expect(register.mock.calls.length).toBe(1)
+    expect(unregister.mock.calls.length).toBe(0)
+  })
+
   // The ref must forward to the newest callback, not the one from the first render.
   it('invokes the most recent onNodeChange after a re-render', () => {
     editor = createRealEditor()
