@@ -22,6 +22,7 @@ import {
 import { removeNode } from './helpers/removeNode.js'
 import type { NormalizedNestedOptions } from './types/options.js'
 import type { ActiveDragRange } from './types/activeDragRange.js'
+import type { DragImageRenderer } from './types/dragImage.js'
 
 type PluginState = {
   locked: boolean
@@ -81,6 +82,7 @@ export interface DragHandlePluginProps {
   getReferencedVirtualElement?: () => VirtualElement | null
   nestedOptions: NormalizedNestedOptions
   dragImageProperties?: string[]
+  dragImage?: DragImageRenderer
 }
 
 export const dragHandlePluginDefaultKey = new PluginKey('dragHandle')
@@ -96,6 +98,7 @@ export const DragHandlePlugin = ({
   onElementDragEnd,
   nestedOptions,
   dragImageProperties,
+  dragImage,
 }: DragHandlePluginProps) => {
   const wrapper = document.createElement('div')
   let locked = false
@@ -194,6 +197,7 @@ export const DragHandlePlugin = ({
       nestedOptions,
       { node: currentNode, pos: currentNodePos },
       dragImageProperties,
+      dragImage,
     )
 
     // remember a multi-block node range so it can be restored after drop

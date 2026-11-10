@@ -2,7 +2,9 @@ import type { Editor } from '@tiptap/core'
 import { getSelectionRanges, NodeRangeSelection } from '@tiptap/extension-node-range'
 import type { Node as PMNode } from '@tiptap/pm/model'
 import { type SelectionRange, NodeSelection } from '@tiptap/pm/state'
+import type { EditorView } from '@tiptap/pm/view'
 
+import type { DragImageRenderer } from '../types/dragImage.js'
 import type { NormalizedNestedOptions } from '../types/options.js'
 import { cloneElement } from './cloneElement.js'
 import { findElementNextToCoords } from './findNextElementFromCursor.js'
@@ -77,12 +79,59 @@ function getDragHandleRanges(
   return getSelectionRanges($from, $to, 0, { extendOnBoundaryOverlap: false })
 }
 
+function appendClonedElements(
+  wrapper: HTMLElement,
+  view: EditorView,
+  ranges: SelectionRange[],
+  dragImageProperties?: string[],
+) {
+  const resetMargin = shouldResetMargin(dragImageProperties)
+
+  ranges.forEach(range => {
+    const element = getDraggedBlockElement(view, range.$from.pos) as HTMLElement | null
+
+    if (!element) {
+      return
+    }
+
+    const clonedElement = cloneElement(element, dragImageProperties)
+
+    if (resetMargin) {
+      clonedElement.style.margin = '0'
+    }
+
+    wrapper.append(clonedElement)
+  })
+}
+
+function createEmptyDragImage() {
+  const element = document.createElement('div')
+
+  element.style.width = '1px'
+  element.style.height = '1px'
+  element.style.opacity = '0'
+
+  return element
+}
+
+function renderDragImage(editor: Editor, pos: number, dragImage: DragImageRenderer) {
+  const node = editor.state.doc.nodeAt(pos)
+  const element = getDraggedBlockElement(editor.view, pos)
+
+  if (!node || !element) {
+    return createEmptyDragImage()
+  }
+
+  return dragImage({ editor, node, pos, element }) ?? createEmptyDragImage()
+}
+
 export function dragHandler(
   event: DragEvent,
   editor: Editor,
   nestedOptions?: NormalizedNestedOptions,
   dragContext?: DragContext,
   dragImageProperties?: string[],
+  dragImage?: DragImageRenderer,
 ) {
   const { view } = editor
 
@@ -135,23 +184,11 @@ export function dragHandler(
     slice = selection.content()
   }
 
-  const resetMargin = shouldResetMargin(dragImageProperties)
-
-  ranges.forEach(range => {
-    const element = getDraggedBlockElement(view, range.$from.pos) as HTMLElement | null
-
-    if (!element) {
-      return
-    }
-
-    const clonedElement = cloneElement(element, dragImageProperties)
-
-    if (resetMargin) {
-      clonedElement.style.margin = '0'
-    }
-
-    wrapper.append(clonedElement)
-  })
+  if (dragImage) {
+    wrapper.append(renderDragImage(editor, ranges[0].$from.pos, dragImage))
+  } else {
+    appendClonedElements(wrapper, view, ranges, dragImageProperties)
+  }
 
   wrapper.style.position = 'absolute'
   wrapper.style.top = '-10000px'

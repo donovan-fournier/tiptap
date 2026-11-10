@@ -11,5 +11,6 @@ export type {
   NormalizedNestedOptions,
 } from './types/options.js'
 export type { DragHandleRule, RuleContext } from './types/rules.js'
+export type { DragImageContext, DragImageRenderer } from './types/dragImage.js'
 
 export default DragHandle

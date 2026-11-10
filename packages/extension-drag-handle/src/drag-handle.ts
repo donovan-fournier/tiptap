@@ -4,6 +4,7 @@ import type { Node as PMNode } from '@tiptap/pm/model'
 
 import { DragHandlePlugin } from './drag-handle-plugin.js'
 import { normalizeNestedOptions } from './helpers/normalizeOptions.js'
+import type { DragImageRenderer } from './types/dragImage.js'
 import type { NestedOptions } from './types/options.js'
 
 export const defaultComputePositionConfig: ComputePositionConfig = {
@@ -112,6 +113,23 @@ export interface DragHandleOptions {
    * })
    */
   dragImageProperties?: string[]
+  /**
+   * Returns your own drag image instead of a styled copy of the dragged block.
+   * Copying a large block is slow, so use this to keep drag start fast.
+   * Return `null` to show no drag image. When set, `dragImageProperties` is ignored.
+   *
+   * @default undefined
+   *
+   * @example
+   * DragHandle.configure({
+   *   dragImage: ({ node }) => {
+   *     const element = document.createElement('div')
+   *     element.textContent = `Moving ${node.type.name}`
+   *     return element
+   *   },
+   * })
+   */
+  dragImage?: DragImageRenderer
 }
 
 declare module '@tiptap/core' {
@@ -154,6 +172,7 @@ export const DragHandle = Extension.create<DragHandleOptions>({
       onElementDragEnd: undefined,
       nested: false,
       dragImageProperties: undefined,
+      dragImage: undefined,
     }
   },
 
@@ -198,6 +217,7 @@ export const DragHandle = Extension.create<DragHandleOptions>({
         onElementDragEnd: this.options.onElementDragEnd,
         nestedOptions,
         dragImageProperties: this.options.dragImageProperties,
+        dragImage: this.options.dragImage,
       }).plugin,
     ]
   },
