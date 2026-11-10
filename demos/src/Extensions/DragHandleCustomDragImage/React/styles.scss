@@ -1,0 +1,27 @@
+.ProseMirror {
+  padding: 1rem 1rem 1rem 0;
+
+  > * {
+    margin-inline-start: 3rem;
+  }
+}
+
+.ProseMirror-selectednoderange {
+  outline: 2px solid #70cff8;
+}
+
+.custom-drag-handle {
+  width: 1rem;
+  height: 1.25rem;
+  border-radius: 0.25rem;
+  background: #0d0d0d20;
+  cursor: grab;
+}
+
+.custom-drag-image {
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  background: #0d0d0d;
+  color: #fff;
+  font-size: 0.875rem;
+}
